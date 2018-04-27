@@ -17,7 +17,6 @@ class ProgressBar:
     _progression = True
 
 
-    # todo: show progress ([====>] xx.xx% (a/b))
     def __init__(self, leng=50, datatype=int, dataend=100, left='[', right=']',
                  progchar='=', progcharend='>', whitechar=' ', endl='', showpercentage=True,
                  showprogress=True):
