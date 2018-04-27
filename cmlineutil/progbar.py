@@ -70,6 +70,6 @@ class ProgressBar:
 
     def __upd_prog(self, curdata):
         cur = self._datatype(curdata)
-        if _datatype is float:
-            return '(' + format(curdata, '.2f') + '/' + format(_dataend, '.2f') + ')'
-        return '(' + str(curdata) + '/' + str(_dataend) + ')'
+        if self._datatype is float:
+            return '(' + format(cur, '.2f') + '/' + format(self._dataend, '.2f') + ')'
+        return '(' + str(curdata) + '/' + str(self._dataend) + ')'

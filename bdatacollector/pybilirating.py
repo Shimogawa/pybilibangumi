@@ -4,6 +4,9 @@ import requests
 import json
 import csv
 
+import numpy as np
+import pandas as pd
+
 import cmlineutil.progbar
 
 
@@ -13,19 +16,22 @@ TITLE = ['序号', '名称', '播放', '弹幕数', '收藏', '硬币', '是否�
 
 class PyBiliRating:
     timeouterr = 0
+    csv_file_path = None
     csv_file = None
     basicInfo = True
     showRating = True
     showProgress = True
     title = []
+    mode = 'w'
 
     __writer = None
 
-    def __init__(self, csv_file, basicInfo=True, show_rating=True, progress=True):
-        if csv_file is None:
+    def __init__(self, csv_file_path=None, mode='w', basicInfo=True, show_rating=True, progress=True):
+        if csv_file_path is None:
             raise FileNotFoundError
         else:
-            self.csv_file = csv_file
+            self.csv_file = open(csv_file_path, mode, encoding='utf-8', newline='')
+            self.csv_file_path = csv_file_path
         self.basicInfo = basicInfo
         self.showRating = show_rating
         self.showProgress = progress
@@ -37,18 +43,36 @@ class PyBiliRating:
         self.__writer = csv.writer(self.csv_file, delimiter=',')
 
 
-    def continueWithCsv(self):
-        pass
+    def continueOnCsv(self, start=None, end=None):
+        '''
+        Make sure you open the file with `append` mode before using this method!
+        And, you also need the path!
+        '''
+        if start is None:
+            df = pd.read_csv(self.csv_file_path)
+            start = df['序号'].max() + 1
+        if end is None:
+            end = start + 100
+        self._write_thing(start, end)
+        print("\nDone!")
 
 
     def startOver(self, start=1, end=7000):
+        '''
+        Make sure you open the file with `write` mode before using this method!
+        '''
         self.__writer.writerow(self.title)
+        self._write_thing(start, end)
+        print("\nDone!")
+
+
+    def _write_thing(self, start, end):
         p = None
         if self.showProgress:
             p = cmlineutil.progbar.ProgressBar(dataend=end - start)
         for i in range(start, end):
             if self.showProgress:
-                p.update(i)
+                p.update(i - start + 1)
             self.rating(i)
             self.csv_file.flush()
 
@@ -76,7 +100,7 @@ class PyBiliRating:
                 playcount = int(data['result']['play_count'])
                 danmaku_count = int(data['result']['danmaku_count'])
                 coins = int(data['result']['coins'])
-                is_finish = 'true' if int(data['result']['is_finish']) == 1 else 'false'
+                is_finish = int(data['result']['is_finish'])
                 li += [playcount, favorites, danmaku_count, coins, is_finish]
             if self.showRating:
                 score = float(data['result']['media']['rating']['score'])
@@ -97,7 +121,7 @@ class PyBiliRating:
                     playcount = int(data['result']['play_count'])
                     danmaku_count = int(data['result']['danmaku_count'])
                     coins = int(data['result']['coins'])
-                    is_finish = 'true' if int(data['result']['is_finish']) == 1 else 'false'
+                    is_finish = int(data['result']['is_finish'])
                     li += [playcount, favorites, danmaku_count, coins, is_finish]
                 if self.showRating:
                     li += [0., 0]
