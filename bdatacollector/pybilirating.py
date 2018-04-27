@@ -86,9 +86,20 @@ class PyBiliRating:
             response = requests.get('https://bangumi.bilibili.com/jsonp/seasoninfo/{0}.ver'.format(bangumi_id),
                                     params=payload, timeout=5)
         except:
-            self.timeouterr += 1
-            print("ERROR: timeout[" + str(self.timeouterr) + ']')
-            return None
+            inner_try = 0
+            connected = False
+            while inner_try < 5:
+                try:
+                    response = requests.get('https://bangumi.bilibili.com/jsonp/seasoninfo/{0}.ver'.format(bangumi_id),
+                                            params=payload, timeout=10)
+                    connected = True
+                    break
+                except:
+                    inner_try += 1
+            if not connected:
+                self.timeouterr += 1
+                print("ERROR: timeout after 6 tries[" + str(self.timeouterr) + ']')
+                return None
 
         data = json.loads(response.text[19:-2])
         try:
